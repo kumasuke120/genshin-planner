@@ -1,0 +1,71 @@
+{
+  "name": "genshin-material-planner",
+  "version": "1.0.0",
+  "description": "Local Genshin Impact material planner",
+  "main": "dist-electron/main/index.js",
+  "private": true,
+  "author": "Kumasuke120",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "build": "tsc -p tsconfig.electron.json && vite build",
+    "build:main": "tsc -p tsconfig.electron.json",
+    "data:import": "npm run build:main && node dist-electron/main/data-cli.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "start": "electron .",
+    "package": "npm run build && electron-builder --win zip"
+  },
+  "dependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "adm-zip": "^0.5.16",
+    "i18next": "^26.4.2",
+    "lucide-react": "^1.41.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-i18next": "^17.0.13",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
+    "electron": "^39.8.10",
+    "electron-builder": "^26.0.12",
+    "jsdom": "^27.1.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.16",
+    "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.kumasuke120.genshin-material-planner",
+    "productName": "Genshin Material Planner",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist-renderer/**",
+      "dist-electron/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/game-data/builtin",
+        "to": "game-data/builtin"
+      }
+    ],
+    "win": {
+      "target": "zip"
+    }
+  },
+  "allowScripts": {
+    "electron-winstaller@5.4.0": true,
+    "esbuild@0.28.2": true,
+    "electron@39.8.10": true
+  }
+}

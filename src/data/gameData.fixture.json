@@ -1,0 +1,21 @@
+{
+  "manifest": { "schemaVersion": 1, "gameDataVersion": "builtin-fixture", "provider": "builtin", "providerUrl": "https://lunaris.moe/", "fetchedAt": "2026-09-06T00:00:00.000Z", "generatedAt": "2026-09-06T00:00:00.000Z", "locales": ["zh-CN", "en-US"] },
+  "materialFamilies": [
+    { "id": "gold", "category": "talent-book", "names": { "zh-CN": "黄金", "en-US": "Gold" }, "craftableRarities": [2,3,4], "materialsByRarity": { "2": { "id": "teachings-of-gold", "rarity": 2, "names": { "zh-CN": "「黄金」的教导", "en-US": "Teachings of Gold" } }, "3": { "id": "guide-to-gold", "rarity": 3, "names": { "zh-CN": "「黄金」的指引", "en-US": "Guide to Gold" } }, "4": { "id": "philosophies-of-gold", "rarity": 4, "names": { "zh-CN": "「黄金」的哲学", "en-US": "Philosophies of Gold" } } } },
+    { "id": "prosperity", "category": "talent-book", "names": { "zh-CN": "繁荣", "en-US": "Prosperity" }, "craftableRarities": [2,3,4], "materialsByRarity": { "2": { "id": "teachings-of-prosperity", "rarity": 2, "names": { "zh-CN": "「繁荣」的教导", "en-US": "Teachings of Prosperity" } }, "3": { "id": "guide-to-prosperity", "rarity": 3, "names": { "zh-CN": "「繁荣」的指引", "en-US": "Guide to Prosperity" } }, "4": { "id": "philosophies-of-prosperity", "rarity": 4, "names": { "zh-CN": "「繁荣」的哲学", "en-US": "Philosophies of Prosperity" } } } },
+    { "id": "decarabian", "category": "weapon-ascension", "names": { "zh-CN": "高塔孤王", "en-US": "Decarabian" }, "craftableRarities": [2,3,4,5], "materialsByRarity": { "2": { "id": "tile", "rarity": 2, "names": { "zh-CN": "高塔孤王的破瓦", "en-US": "Tile of Decarabian's Tower" } }, "3": { "id": "debris", "rarity": 3, "names": { "zh-CN": "高塔孤王的残垣", "en-US": "Debris of Decarabian's City" } }, "4": { "id": "fragment", "rarity": 4, "names": { "zh-CN": "高塔孤王的断片", "en-US": "Fragment of Decarabian's Epic" } }, "5": { "id": "piece", "rarity": 5, "names": { "zh-CN": "高塔孤王的碎梦", "en-US": "Scattered Piece of Decarabian's Dream" } } } }
+  ],
+  "characters": [
+    { "id": "xingqiu", "names": { "zh-CN": "行秋", "en-US": "Xingqiu" }, "element": "hydro", "rarity": 4, "talentMaterialFamilyId": "gold" },
+    { "id": "eula", "names": { "zh-CN": "优菈", "en-US": "Eula" }, "element": "cryo", "rarity": 5, "talentMaterialFamilyId": "prosperity" }
+  ],
+  "weapons": [
+    { "id": "favonius-sword", "names": { "zh-CN": "西风剑", "en-US": "Favonius Sword" }, "rarity": 4, "type": "sword", "materialFamilyId": "decarabian", "phaseRequirements": { "1": { "2": 3 }, "2": { "2": 3, "3": 2 }, "3": { "3": 4 }, "4": { "3": 6 }, "5": { "3": 3, "4": 4 }, "6": { "4": 6, "5": 4 } } },
+    { "id": "the-flute", "names": { "zh-CN": "笛剑", "en-US": "The Flute" }, "rarity": 4, "type": "sword", "materialFamilyId": "decarabian", "phaseRequirements": { "1": { "2": 3 }, "2": { "2": 3, "3": 2 }, "3": { "3": 4 }, "4": { "3": 6 }, "5": { "3": 3, "4": 4 }, "6": { "4": 6, "5": 4 } } },
+    { "id": "12101", "names": { "zh-CN": "训练大剑", "en-US": "Training Claymore" }, "rarity": 1, "type": "claymore", "materialFamilyId": "decarabian", "phaseRequirements": {}, "calculationStatus": "unsupported-source-curve" }
+  ],
+  "craftingCharacters": [
+    { "id": "xingqiu", "names": { "zh-CN": "行秋", "en-US": "Xingqiu" }, "passive": { "strategy": "refund_25", "categories": ["talent-book"], "description": { "zh-CN": "合成角色天赋素材时，有 25% 概率返还部分合成材料。", "en-US": "When crafting Character Talent Materials, has a 25% chance to refund materials." } } },
+    { "id": "eula", "names": { "zh-CN": "优菈", "en-US": "Eula" }, "passive": { "strategy": "double_10", "categories": ["talent-book"], "description": { "zh-CN": "合成角色天赋素材时，有 10% 概率获得双倍产物。", "en-US": "When crafting Character Talent Materials, has a 10% chance to receive double output." } } }
+  ]
+}
