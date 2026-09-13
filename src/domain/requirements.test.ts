@@ -6,6 +6,7 @@ describe('requirement aggregation', () => {
   it('sums only weapon ascension transitions after the current phase', () => {
     const weapon: Weapon = { id: 'test', names: { 'zh-CN': '测试', 'en-US': 'Test' }, materialFamilyId: 'test', phaseRequirements: { 1: { 2: 3 }, 2: { 3: 2 }, 3: { 4: 4 } } };
     expect(weaponRequirement(weapon, 1, 3)).toMatchObject({ 2: 0, 3: 2, 4: 4 });
+    expect(weaponRequirement(weapon, 3, 3)).toEqual({});
   });
 
   it('sums the three requested talent intervals', () => {

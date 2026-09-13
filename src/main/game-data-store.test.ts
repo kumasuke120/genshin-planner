@@ -92,6 +92,21 @@ describe("GameDataStore local lifecycle", () => {
     expect(await store.iconPath("missing")).toBeNull();
   });
 
+  it("falls back to built-in data when the active bundle is unreadable", async () => {
+    const root = path.join(userData, "game-data");
+    await mkdir(path.join(root, "broken"), { recursive: true });
+    await writeFile(path.join(root, "broken", "bundle.json"), "not-json", "utf8");
+    await writeFile(
+      path.join(root, "state.json"),
+      JSON.stringify({ activeVersion: "broken" }),
+      "utf8",
+    );
+
+    await expect(store.load()).resolves.toMatchObject({
+      manifest: { provider: "builtin" },
+    });
+  });
+
   it("finds active and built-in icons and ignores malformed operation history", async () => {
     const active = path.join(userData, "game-data", "active");
     await writeBundle(active, "active-icons");
