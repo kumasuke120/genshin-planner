@@ -1,6 +1,10 @@
 # 原神养成规划器
 
 <p align="center">
+  <a href="https://github.com/kumasuke120/genshin-planner/actions/workflows/ci.yml"><img src="https://github.com/kumasuke120/genshin-planner/actions/workflows/ci.yml/badge.svg?branch=master" alt="Build Status"></a>
+</p>
+
+<p align="center">
   <img src="resources/brand/app-icon.svg" width="112" height="112" alt="原神养成规划器 Logo">
 </p>
 
