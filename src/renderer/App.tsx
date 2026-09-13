@@ -131,6 +131,10 @@ function localName(
   return item.names[locale];
 }
 
+/**
+ * 应用根组件，负责桌面工作区状态、计算流程与设置界面
+ * @returns 完整的桌面应用界面
+ */
 export default function App() {
   const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState<UserProfileV1>(emptyProfile);

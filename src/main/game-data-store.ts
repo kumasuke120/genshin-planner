@@ -63,12 +63,20 @@ function rarity(value: unknown): MaterialRarity | undefined {
 function weaponRarity(value: unknown): 1 | 2 | 3 | 4 | 5 | undefined {
   return qualityToWeaponRarity[string(value)];
 }
+function isNotFound(error: unknown): boolean {
+  return (error as NodeJS.ErrnoException).code === "ENOENT";
+}
+/**
+ * 将 Lunaris 武器品质转换为内部星级，并修正初始一星武器的来源标记
+ * @param id Lunaris 提供的稳定武器 ID
+ * @param value Lunaris 提供的品质原始值
+ * @returns 内部使用的一至五星武器星级
+ */
 export function weaponRarityFromSource(
   id: string,
   value: unknown,
 ): 1 | 2 | 3 | 4 | 5 {
-  // Lunaris labels the starter 1X101 weapons as QUALITY_GREEN. Their stable
-  // weapon IDs are the authoritative in-game one-star classification.
+  // Lunaris 把初始 1X101 武器标为 QUALITY_GREEN，此处以稳定 ID 对应的游戏内一星分类为准
   if (/^1[1-5]101$/u.test(id)) return 1;
   return weaponRarity(value) ?? 3;
 }
@@ -195,27 +203,27 @@ const weaponCurves: Record<
 };
 
 /**
- * 管理可替换的游戏资料包，负责校验、原子安装、回退、同步与图标定位。
- * 用户方案由 ProfileStore 独立管理，本类不得读取或修改 Profile 文件。
+ * 管理可替换的游戏资料包，负责校验、原子安装、回退、同步与图标定位
+ * 用户方案由 ProfileStore 独立管理，本类不得读取或修改 Profile 文件
  */
 export class GameDataStore {
-  /** 游戏资料在 Electron userData 下的持久化根目录。 */
+  /** 游戏资料在 Electron userData 下的持久化根目录 */
   private readonly root: string;
-  /** 旧版固定活动目录；仅用于把已有资料迁移到版本目录。 */
+  /** 旧版固定活动目录；仅用于把已有资料迁移到版本目录 */
   private readonly legacyActive: string;
-  /** 随应用提供的最小示例资料目录；开发环境缺失时改用本地 fallback。 */
+  /** 随应用提供的最小示例资料目录；开发环境缺失时改用本地 fallback */
   private builtin: string;
-  /** 当前同步任务的取消控制器；没有同步任务时为 null。 */
+  /** 当前同步任务的取消控制器；没有同步任务时为 null */
   private syncAbort: AbortController | null = null;
-  /** 当前同步任务完全退出时兑现；取消操作通过它等待清理结束。 */
+  /** 当前同步任务完全退出时兑现；取消操作通过它等待清理结束 */
   private syncStopped: Promise<void> | null = null;
-  /** 通知等待方同步任务已经退出；仅在同步生命周期内存在。 */
+  /** 通知等待方同步任务已经退出；仅在同步生命周期内存在 */
   private resolveSyncStopped: (() => void) | null = null;
 
   /**
-   * 创建游戏资料仓库。
-   * @param electronApp 提供 userData 路径与打包状态的 Electron 应用实例。
-   * @param report 接收同步阶段进度的回调。
+   * 创建游戏资料仓库
+   * @param electronApp 提供 userData 路径与打包状态的 Electron 应用实例
+   * @param report 接收同步阶段进度的回调
    */
   constructor(
     private readonly electronApp: App,
@@ -291,17 +299,19 @@ export class GameDataStore {
       try {
         await stat(path.join(directory, "bundle.json"));
         return directory;
-      } catch {
-        /* 尝试迁移旧版目录。 */
+      } catch (error) {
+        if (!isNotFound(error)) throw error;
       }
     }
+    // 旧版把活动资料固定放在 active 目录，首次读取时迁入按来源和版本命名的目录并回写状态
     try {
       const bundle = await this.readBundle(this.legacyActive);
       const packageKey = this.packageKey(bundle.manifest);
       const directory = this.versionDirectory(packageKey);
       try {
         await stat(directory);
-      } catch {
+      } catch (error) {
+        if (!isNotFound(error)) throw error;
         await rename(this.legacyActive, directory);
       }
       await this.writeState({
@@ -368,8 +378,8 @@ export class GameDataStore {
   }
 
   /**
-   * 加载当前资料；活动资料不可用时回退到内置资料。
-   * @returns 已通过结构与引用校验的游戏资料。
+   * 加载当前资料；活动资料不可用时回退到内置资料
+   * @returns 已通过结构与引用校验的游戏资料
    */
   async load(): Promise<GameDataBundle> {
     await this.ensureBuiltin();
@@ -384,8 +394,8 @@ export class GameDataStore {
   }
 
   /**
-   * 返回当前资料来源、内容计数和最近五条维护操作。
-   * @returns 当前游戏资料状态。
+   * 返回当前资料来源、内容计数和最近五条维护操作
+   * @returns 当前游戏资料状态
    */
   async status(): Promise<GameDataStatus> {
     await this.ensureBuiltin();
@@ -400,7 +410,7 @@ export class GameDataStore {
     try {
       icons = (await readdir(path.join(directory, "icons"))).length;
     } catch {
-      /* no icons in bootstrap data */
+      /* 内置后备资料不携带图标 */
     }
     return {
       manifest: bundle.manifest,
@@ -434,11 +444,12 @@ export class GameDataStore {
     await rm(replaced, { recursive: true, force: true });
     let movedDestination = false;
     try {
+      // 已有同版本资料先移到可恢复目录，验证后的暂存目录才能进入正式位置
       try {
         await rename(destination, replaced);
         movedDestination = true;
-      } catch {
-        /* 首次安装该版本。 */
+      } catch (error) {
+        if (!isNotFound(error)) throw error;
       }
       await rename(staging, destination);
       const state = await this.state();
@@ -448,12 +459,13 @@ export class GameDataStore {
       });
       await rm(replaced, { recursive: true, force: true });
     } catch (error) {
+      // 替换或状态写入失败时移除新目录，并尽力恢复刚才移走的旧版本
       await rm(destination, { recursive: true, force: true });
       if (movedDestination)
         try {
           await rename(replaced, destination);
         } catch {
-          /* 保留目录供人工恢复。 */
+          /* 保留目录供人工恢复 */
         }
       throw error;
     }
@@ -461,8 +473,8 @@ export class GameDataStore {
   }
 
   /**
-   * 使用已校验的内置资料替换活动资料，不触碰用户方案。
-   * @returns 恢复完成后的资料状态。
+   * 使用已校验的内置资料替换活动资料，不触碰用户方案
+   * @returns 恢复完成后的资料状态
    */
   async restoreBuiltin(): Promise<GameDataStatus> {
     await this.ensureBuiltin();
@@ -476,8 +488,8 @@ export class GameDataStore {
   }
 
   /**
-   * 将当前资料导出为 `.gdata` 格式的原神游戏资料包。
-   * @param filePath 目标文件的绝对路径。
+   * 将当前资料导出为 `.gdata` 格式的原神游戏资料包
+   * @param filePath 目标文件的绝对路径
    */
   async exportTo(filePath: string): Promise<void> {
     if (path.extname(filePath).toLowerCase() !== ".gdata")
@@ -491,9 +503,9 @@ export class GameDataStore {
   }
 
   /**
-   * 校验并原子安装本地资料包，失败时保留原活动资料。
-   * @param filePath 待导入资料包的绝对路径。
-   * @returns 安装完成后的资料状态。
+   * 校验并原子安装本地资料包，失败时保留原活动资料
+   * @param filePath 待导入资料包的绝对路径
+   * @returns 安装完成后的资料状态
    */
   async importFrom(filePath: string): Promise<GameDataStatus> {
     try {
@@ -528,17 +540,17 @@ export class GameDataStore {
   }
 
   /**
-   * 根据稳定图标 ID 构造渲染进程可访问的自定义协议地址。
-   * @param iconId 可选的不含扩展名的稳定图标 ID。
-   * @returns 图标存在 ID 时返回自定义协议地址，否则返回空字符串。
+   * 根据稳定图标 ID 构造渲染进程可访问的自定义协议地址
+   * @param iconId 可选的不含扩展名的稳定图标 ID
+   * @returns 图标存在 ID 时返回自定义协议地址，否则返回空字符串
    */
   iconUrl(iconId: string | undefined): string {
     return iconId ? `game-data://icon/${encodeURIComponent(iconId)}` : "";
   }
   /**
-   * 在活动资料和内置资料中查找图标。
-   * @param iconId 不含扩展名的稳定图标 ID。
-   * @returns 找到时返回绝对路径，否则返回 null。
+   * 在活动资料和内置资料中查找图标
+   * @param iconId 不含扩展名的稳定图标 ID
+   * @returns 找到时返回绝对路径，否则返回 null
    */
   async iconPath(iconId: string): Promise<string | null> {
     for (const directory of [await this.loadDirectory(), this.builtin]) {
@@ -547,15 +559,15 @@ export class GameDataStore {
         await stat(candidate);
         return candidate;
       } catch {
-        /* continue */
+        /* 当前目录没有该图标，继续检查下一资料目录 */
       }
     }
     return null;
   }
 
   /**
-   * 从 Lunaris 同步、转换、校验并安装最新资料。
-   * @returns 安装完成后的资料状态。
+   * 从 Lunaris 同步、转换、校验并安装最新资料
+   * @returns 安装完成后的资料状态
    */
   async sync(): Promise<GameDataStatus> {
     if (this.syncAbort) throw new Error("A game data sync is already running");
@@ -588,7 +600,7 @@ export class GameDataStore {
     }
   }
 
-  /** 请求取消当前同步，并等待下载、转换或安装任务完全退出；没有活动任务时不产生副作用。 */
+  /** 请求取消当前同步，并等待下载、转换或安装任务完全退出；没有活动任务时不产生副作用 */
   async cancelSync(): Promise<void> {
     const stopped = this.syncStopped;
     this.syncAbort?.abort();
@@ -1068,7 +1080,7 @@ export class GameDataStore {
                 }
               } catch {
                 signal.throwIfAborted();
-                /* A later retry may still succeed. */
+                /* 单次网络请求失败后仍按退避策略重试 */
               }
               if (results.has(request.id) || signal.aborted) break;
               if (attempt < 4)

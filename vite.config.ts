@@ -6,6 +6,7 @@ function buildId(): string {
   try { return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() || 'local-uncommitted'; } catch { return 'local-uncommitted'; }
 }
 
+/** Vite 渲染进程构建及分层 Vitest 测试配置 */
 export default defineConfig({
   plugins: [react()],
   define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '1.0.0'), __APP_AUTHOR__: JSON.stringify('Kumasuke120'), __BUILD_ID__: JSON.stringify(buildId()) },

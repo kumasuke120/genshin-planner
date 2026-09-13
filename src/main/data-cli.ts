@@ -1,7 +1,7 @@
 import path from "node:path";
 import { GameDataStore } from "./game-data-store";
 
-/** 将完整 Lunaris 资料生成到统一的开发构建目录。 */
+/** 将完整 Lunaris 资料生成到统一的开发构建目录 */
 async function main(): Promise<void> {
   const workspace = process.cwd();
   const outputRoot = path.join(workspace, "out");

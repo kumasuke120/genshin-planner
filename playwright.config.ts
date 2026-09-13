@@ -1,5 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
+/** Playwright 的 Electron 流程测试与本地视觉回归配置 */
 export default defineConfig({
   testDir: './tests/e2e',
   outputDir: './out/test-results/artifacts',

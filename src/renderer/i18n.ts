@@ -10,4 +10,5 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false }
 });
 
+/** 已注册 React 插件和中英文资源的应用国际化实例 */
 export default i18n;
