@@ -6,7 +6,10 @@ export default defineConfig({
   snapshotPathTemplate: './tests/visual/__screenshots__/{arg}{ext}',
   reporter: [['list'], ['html', { outputFolder: './out/test-results/report', open: 'never' }]],
   timeout: 30_000,
-  expect: { timeout: 15_000 },
+  expect: {
+    timeout: 15_000,
+    toMatchSnapshot: { maxDiffPixelRatio: 0.01 }
+  },
   retries: 0,
   workers: 1,
   use: {

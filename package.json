@@ -25,7 +25,7 @@
     "test:integration": "vitest run --project integration",
     "test:coverage": "vitest run --coverage",
     "test:clean": "node scripts/clean-test-artifacts.mjs",
-    "test:e2e": "npm run test:clean && npm run build && playwright test && npm run test:clean",
+    "test:e2e": "npm run test:clean && npm run build && playwright test --grep-invert @visual && npm run test:clean",
     "test:e2e:headed": "npm run build && playwright test --headed",
     "test:visual": "npm run test:clean && npm run build && playwright test --grep @visual && npm run test:clean",
     "test:watch": "vitest",
