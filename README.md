@@ -1,7 +1,14 @@
 # 原神养成规划器
 
 <p align="center">
+  <strong>简体中文</strong> | <a href="README_EN.md">English</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/kumasuke120/genshin-planner/actions/workflows/ci.yml"><img src="https://github.com/kumasuke120/genshin-planner/actions/workflows/ci.yml/badge.svg?branch=master" alt="Build Status"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/kumasuke120/genshin-planner" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/coverage-%E2%89%A590%25-4C956C" alt="Coverage at least 90%">
+  <img src="https://img.shields.io/badge/platform-Windows-557FA3" alt="Windows">
 </p>
 
 <p align="center">
