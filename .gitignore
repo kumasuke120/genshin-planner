@@ -1,11 +1,11 @@
 /tmp
-/out-tsc
-/dist
-/dist-electron
-/dist-renderer
-/release
-/build-renderer
+/out
+/playwright-report
+/test-results
 /AGENTS.md
+/LOG.local.md
+/.codex
+/.idea
 
 node_modules/
 npm-debug.log*

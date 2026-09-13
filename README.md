@@ -1,56 +1,44 @@
-# 原神养成材料规划器
+# 原神养成规划器
 
-离线优先的 Electron 桌面工具，用于规划角色天赋、武器突破和手动材料目标。输入库存后，应用会计算需求、3:1 合成、合成角色被动收益和最终缺口。
+<p align="center">
+  <img src="resources/brand/app-icon.svg" width="112" height="112" alt="原神养成规划器 Logo">
+</p>
 
-## 功能
+![原神养成规划器总览](docs/assets/screenshots/overview.png)
 
-- 角色天赋、武器突破与手动材料计算
-- 保存方案和材料库存
-- 内置游戏资料与图标，支持手动同步、导入、导出和恢复
-- 中英文界面
-- 本地数据优先：日常使用不依赖网络
+## 使用方法
 
-## 开发
+1. 打开“设置 > 游戏资料”，点击“同步 Lunaris”下载完整游戏资料；内置示例资料也可以直接体验基本流程。
+2. 从侧栏进入“角色天赋”或“武器突破”，选择培养对象和目标等级。
+3. 在材料表中填写当前库存，按需选择合成角色，查看合成后可用数量和材料缺口。
+4. 点击“保存方案”保留培养目标；已保存方案可以从总览或“设置 > 我的方案”重新打开。
+5. 临时核算单个材料系列时使用“手动计算”，该页面不保存方案。
+
+## 编译
 
 需要 Node.js 20 或更高版本。
 
 ```bash
-npm install
-npm run dev
-```
-
-## 验证与构建
-
-```bash
-npm test
-npx tsc --noEmit -p tsconfig.json
+npm ci
 npm run build
 ```
 
-## Windows 绿色版
+本地开发：
+
+```bash
+npm run dev
+```
+
+完整验证：
+
+```bash
+npm run verify
+npm run test:e2e
+npm run test:visual
+```
+
+生成 Windows 绿色 ZIP：
 
 ```bash
 npm run package
 ```
-
-该命令会先执行生产构建，再生成 Windows x64 ZIP，不生成安装程序。产物位于：
-
-```text
-release/Genshin Material Planner-1.0.0-win.zip
-```
-
-解压后直接运行 `Genshin Material Planner.exe`。
-
-## 本地数据
-
-Windows 默认将用户方案、库存和已下载游戏资料存放在：
-
-```text
-%APPDATA%/genshin-material-planner/
-```
-
-其中 `profile.json` 保存方案和库存，`game-data/active` 保存当前下载的游戏资料与图标。
-
-## 设计文档
-
-- [v1.0.0 设计文档](docs/DESIGN_v1.0.0.md)

@@ -1,17 +1,36 @@
 {
   "name": "genshin-material-planner",
-  "version": "1.0.0",
-  "description": "Local Genshin Impact material planner",
-  "main": "dist-electron/main/index.js",
+  "version": "1.1.0",
+  "description": "Local Genshin Impact progression planner",
+  "main": "out/electron/main/index.js",
   "private": true,
   "author": "Kumasuke120",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kumasuke120/genshin-planner.git"
+  },
   "scripts": {
     "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
     "build": "tsc -p tsconfig.electron.json && vite build",
     "build:main": "tsc -p tsconfig.electron.json",
-    "data:import": "npm run build:main && node dist-electron/main/data-cli.js",
+    "data:import": "npm run build:main && node out/electron/main/data-cli.js",
+    "data:sample": "node scripts/build-builtin-sample.mjs",
+    "brand:build": "node scripts/build-brand-icon.mjs",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
     "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:component": "vitest run --project component",
+    "test:integration": "vitest run --project integration",
+    "test:coverage": "vitest run --coverage",
+    "test:clean": "node scripts/clean-test-artifacts.mjs",
+    "test:e2e": "npm run test:clean && npm run build && playwright test && npm run test:clean",
+    "test:e2e:headed": "npm run build && playwright test --headed",
+    "test:visual": "npm run test:clean && npm run build && playwright test --grep @visual && npm run test:clean",
     "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.electron.json",
+    "verify": "npm run lint && npm test && npm run typecheck && npm run build",
     "start": "electron .",
     "package": "npm run build && electron-builder --win zip"
   },
@@ -26,6 +45,8 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.55.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -33,24 +54,30 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.1.11",
     "concurrently": "^9.2.1",
     "electron": "^39.8.10",
     "electron-builder": "^26.0.12",
+    "eslint": "^9.39.1",
+    "eslint-plugin-jsdoc": "^61.4.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "jsdom": "^27.1.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3",
     "vite": "^7.3.1",
     "vitest": "^4.0.16",
     "wait-on": "^9.0.3"
   },
   "build": {
     "appId": "com.kumasuke120.genshin-material-planner",
-    "productName": "Genshin Material Planner",
+    "productName": "Genshin Planner",
     "directories": {
-      "output": "release"
+      "output": "out/package",
+      "buildResources": "resources/brand"
     },
     "files": [
-      "dist-renderer/**",
-      "dist-electron/**",
+      "out/renderer/**",
+      "out/electron/**",
       "package.json"
     ],
     "extraResources": [
@@ -60,8 +87,11 @@
       }
     ],
     "win": {
-      "target": "zip"
-    }
+      "target": "zip",
+      "executableName": "GenshinPlanner",
+      "icon": "resources/brand/app.ico"
+    },
+    "artifactName": "GenshinPlanner-v${version}-win-${arch}.${ext}"
   },
   "allowScripts": {
     "electron-winstaller@5.4.0": true,

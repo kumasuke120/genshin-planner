@@ -1,73 +1,29 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, net, protocol, shell } from 'electron';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-import { pathToFileURL } from 'node:url';
-import { z } from 'zod';
-import type { UserProfileV1 } from '../shared/types';
-import { GameDataStore } from './game-data-store';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Menu,
+  net,
+  protocol,
+  shell,
+} from "electron";
+import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import type { UserProfileV1 } from "../shared/types";
+import { GameDataStore } from "./game-data-store";
+import {
+  loadProfileFile,
+  saveProfileFile,
+  validateProfile,
+} from "./profile-store";
 
-const countsSchema = z.partialRecord(z.enum(['2', '3', '4', '5']), z.number().int().nonnegative());
-const talentLevelsSchema = z.object({ normal: z.number().int().min(1).max(10), skill: z.number().int().min(1).max(10), burst: z.number().int().min(1).max(10) });
-const targetSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('weapon'), weaponId: z.string().min(1), currentPhase: z.number().int().min(0).max(6), targetPhase: z.number().int().min(0).max(6) }),
-  z.object({ type: z.literal('talent'), characterId: z.string().min(1), current: talentLevelsSchema, target: talentLevelsSchema }),
-  z.object({ type: z.literal('manual'), materialFamilyId: z.string().min(1), required: countsSchema })
-]);
-const savedPlanSchema = z.object({ id: z.string().min(1), name: z.string().min(1).max(100), target: targetSchema, craftingCharacterId: z.string().min(1).nullable(), createdAt: z.string(), updatedAt: z.string() });
-const normalizedPlanName = (name: string) => name.trim().normalize('NFKC').toLocaleLowerCase();
-const profileSchema = z.object({
-  schemaVersion: z.literal(1),
-  locale: z.enum(['zh-CN', 'en-US']),
-  inventoryByMaterialFamily: z.record(z.string(), countsSchema).default({}),
-  savedPlans: z.array(savedPlanSchema).default([]),
-  recentPlanIds: z.array(z.string()).default([]),
-  updatedAt: z.string()
-}).superRefine((profile, context) => {
-  const names = new Set<string>();
-  profile.savedPlans.forEach((plan, index) => {
-    const normalized = normalizedPlanName(plan.name);
-    if (names.has(normalized)) context.addIssue({ code: 'custom', path: ['savedPlans', index, 'name'], message: 'Saved plan names must be unique' });
-    names.add(normalized);
-  });
-});
-
-function defaultProfile(): UserProfileV1 {
-  return {
-    schemaVersion: 1,
-    locale: app.getLocale().toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US',
-    inventoryByMaterialFamily: {},
-    savedPlans: [],
-    recentPlanIds: [],
-    updatedAt: new Date().toISOString()
-  };
-}
+const testUserData = process.env.GENSHIN_PLANNER_USER_DATA;
+if (testUserData) app.setPath("userData", path.resolve(testUserData));
 
 function profilePath(): string {
-  return path.join(app.getPath('userData'), 'profile.json');
-}
-
-async function validateProfile(raw: unknown): Promise<UserProfileV1> {
-  const parsed = profileSchema.safeParse(raw);
-  if (!parsed.success) throw new Error('Invalid profile format');
-  return parsed.data as UserProfileV1;
-}
-
-async function loadProfile(): Promise<UserProfileV1> {
-  try {
-    return await validateProfile(JSON.parse(await readFile(profilePath(), 'utf8')));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return defaultProfile();
-    throw error;
-  }
-}
-
-async function saveProfile(profile: UserProfileV1): Promise<void> {
-  const valid = await validateProfile(profile);
-  const destination = profilePath();
-  await mkdir(path.dirname(destination), { recursive: true });
-  const temporary = `${destination}.${process.pid}.tmp`;
-  await writeFile(temporary, JSON.stringify({ ...valid, updatedAt: new Date().toISOString() }, null, 2), 'utf8');
-  await rename(temporary, destination);
+  return path.join(app.getPath("userData"), "profile.json");
 }
 
 function createWindow(): BrowserWindow {
@@ -76,18 +32,39 @@ function createWindow(): BrowserWindow {
     height: 800,
     minWidth: 900,
     minHeight: 650,
-    backgroundColor: '#f5f7f8',
+    backgroundColor: "#f5f7f8",
+    icon: app.isPackaged
+      ? undefined
+      : path.resolve(__dirname, "../../../resources/brand/app.ico"),
+    show: process.env.GENSHIN_PLANNER_E2E !== "1",
     autoHideMenuBar: true,
     webPreferences: {
-      preload: path.join(__dirname, '../preload/index.js'),
+      preload: path.join(__dirname, "../preload/index.js"),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true
-    }
+      sandbox: true,
+      offscreen: process.env.GENSHIN_PLANNER_VISUAL === "1",
+      backgroundThrottling: process.env.GENSHIN_PLANNER_VISUAL !== "1",
+    },
   });
 
-  if (app.isPackaged) window.loadFile(path.join(__dirname, '../../dist-renderer/index.html'));
-  else window.loadURL('http://localhost:5173');
+  let closeConfirmed = false;
+  window.on("close", (event) => {
+    if (closeConfirmed || window.webContents.isDestroyed()) return;
+    event.preventDefault();
+    window.webContents.send("window:close-requested");
+  });
+  ipcMain.once(`window:close-confirmed:${window.id}`, () => {
+    closeConfirmed = true;
+    window.close();
+  });
+  window.on("closed", () =>
+    ipcMain.removeAllListeners(`window:close-confirmed:${window.id}`),
+  );
+
+  if (app.isPackaged || process.env.GENSHIN_PLANNER_E2E === "1")
+    window.loadFile(path.join(__dirname, "../../renderer/index.html"));
+  else window.loadURL("http://localhost:5173");
   return window;
 }
 
@@ -95,58 +72,107 @@ let gameData: GameDataStore;
 
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null);
-  gameData = new GameDataStore(app, (progress) => BrowserWindow.getAllWindows().forEach((window) => window.webContents.send('game-data:progress', progress)));
-  protocol.handle('game-data', async (request) => {
-    const iconId = decodeURIComponent(new URL(request.url).pathname.replace(/^\//, ''));
+  gameData = new GameDataStore(app, (progress) =>
+    BrowserWindow.getAllWindows().forEach((window) =>
+      window.webContents.send("game-data:progress", progress),
+    ),
+  );
+  protocol.handle("game-data", async (request) => {
+    const iconId = decodeURIComponent(
+      new URL(request.url).pathname.replace(/^\//, ""),
+    );
     const iconPath = await gameData.iconPath(iconId);
-    return iconPath ? net.fetch(pathToFileURL(iconPath).toString()) : new Response('', { status: 404 });
+    return iconPath
+      ? net.fetch(pathToFileURL(iconPath).toString())
+      : new Response("", { status: 404 });
   });
-  ipcMain.handle('profile:load', () => loadProfile());
-  ipcMain.handle('profile:save', (_event, profile: UserProfileV1) => saveProfile(profile));
-  ipcMain.handle('profile:export', async (_event, profile: UserProfileV1) => {
-    const valid = await validateProfile(profile);
+  ipcMain.handle("profile:load", () =>
+    loadProfileFile(profilePath(), app.getLocale()),
+  );
+  ipcMain.handle("profile:save", (_event, profile: UserProfileV1) =>
+    saveProfileFile(profilePath(), profile),
+  );
+  ipcMain.handle("profile:export", async (_event, profile: UserProfileV1) => {
+    const valid = validateProfile(profile);
     const result = await dialog.showSaveDialog({
-      title: 'Export Genshin Material Planner data',
-      defaultPath: 'genshin-material-planner-profile.json',
-      filters: [{ name: 'JSON', extensions: ['json'] }]
+      title: "Export Genshin Material Planner data",
+      defaultPath: "genshin-material-planner-profile.json",
+      filters: [{ name: "JSON", extensions: ["json"] }],
     });
     if (result.canceled || !result.filePath) return false;
-    await writeFile(result.filePath, JSON.stringify(valid, null, 2), 'utf8');
+    await writeFile(result.filePath, JSON.stringify(valid, null, 2), "utf8");
     return true;
   });
-  ipcMain.handle('profile:import', async () => {
+  ipcMain.handle("profile:import", async () => {
     const result = await dialog.showOpenDialog({
-      title: 'Import Genshin Material Planner data',
-      properties: ['openFile'],
-      filters: [{ name: 'JSON', extensions: ['json'] }]
+      title: "Import Genshin Material Planner data",
+      properties: ["openFile"],
+      filters: [{ name: "JSON", extensions: ["json"] }],
     });
     if (result.canceled || result.filePaths.length === 0) return null;
-    return validateProfile(JSON.parse(await readFile(result.filePaths[0], 'utf8')));
+    return validateProfile(
+      JSON.parse(await readFile(result.filePaths[0], "utf8")),
+    );
   });
-  ipcMain.handle('game-data:load', () => gameData.load());
-  ipcMain.handle('game-data:status', () => gameData.status());
-  ipcMain.handle('game-data:sync', () => gameData.sync());
-  ipcMain.handle('game-data:cancel', () => gameData.cancelSync());
-  ipcMain.handle('game-data:restore', () => gameData.restoreBuiltin());
-  ipcMain.handle('shell:open-external', async (_event, url: string) => {
+  ipcMain.handle("game-data:load", () => gameData.load());
+  ipcMain.handle("game-data:status", () => gameData.status());
+  ipcMain.handle("game-data:sync", () => gameData.sync());
+  ipcMain.handle("game-data:cancel", () => gameData.cancelSync());
+  ipcMain.on("window:close-confirmed", (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window) ipcMain.emit(`window:close-confirmed:${window.id}`);
+  });
+  ipcMain.handle("game-data:restore", () => gameData.restoreBuiltin());
+  ipcMain.handle("shell:open-external", async (_event, url: string) => {
     const parsed = new URL(url);
-    if (parsed.protocol !== 'https:' || parsed.hostname !== 'lunaris.moe') throw new Error('Unsupported external URL');
+    const allowedHosts = new Set(["lunaris.moe", "github.com"]);
+    if (parsed.protocol !== "https:" || !allowedHosts.has(parsed.hostname))
+      throw new Error("不允许打开未经批准的外部地址");
     await shell.openExternal(url);
   });
-  ipcMain.handle('game-data:import', async () => {
-    const result = await dialog.showOpenDialog({ title: 'Import game data', properties: ['openFile'], filters: [{ name: 'Genshin Material Data', extensions: ['gmpdata', 'zip'] }] });
+  ipcMain.handle("shell:open-user-data", () =>
+    shell.openPath(app.getPath("userData")),
+  );
+  ipcMain.handle("shell:open-game-data", () =>
+    shell.openPath(path.join(app.getPath("userData"), "game-data")),
+  );
+  ipcMain.handle("game-data:import", async (_event, locale: string) => {
+    const packageName = locale.toLowerCase().startsWith("zh")
+      ? "原神游戏资料包"
+      : "Genshin Data Package";
+    const result = await dialog.showOpenDialog({
+      properties: ["openFile"],
+      filters: [{ name: packageName, extensions: ["gdata"] }],
+    });
     if (result.canceled || !result.filePaths[0]) return null;
     return gameData.importFrom(result.filePaths[0]);
   });
-  ipcMain.handle('game-data:export', async () => {
-    const result = await dialog.showSaveDialog({ title: 'Export game data', defaultPath: 'genshin-game-data.gmpdata', filters: [{ name: 'Genshin Material Data', extensions: ['gmpdata'] }] });
+  ipcMain.handle("game-data:export", async (_event, locale: string) => {
+    const packageName = locale.toLowerCase().startsWith("zh")
+      ? "原神游戏资料包"
+      : "Genshin Data Package";
+    const status = await gameData.status();
+    const provider = status.manifest.provider
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/gu, "-");
+    const version = status.manifest.gameDataVersion
+      .replace(/^v/iu, "")
+      .replace(/[^a-z0-9._-]+/giu, "-");
+    const result = await dialog.showSaveDialog({
+      defaultPath: `genshin-data-${provider}-v${version}.gdata`,
+      filters: [{ name: packageName, extensions: ["gdata"] }],
+    });
     if (result.canceled || !result.filePath) return false;
     await gameData.exportTo(result.filePath);
     return true;
   });
 
   createWindow();
-  app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
 });
 
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});

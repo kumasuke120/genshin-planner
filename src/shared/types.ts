@@ -1,14 +1,17 @@
-export type Locale = 'zh-CN' | 'en-US';
+export type Locale = "zh-CN" | "en-US";
+/** 应用支持的外观模式；system 表示跟随操作系统。 */
+export type ThemeMode = "system" | "light" | "dark";
 export type MaterialRarity = 2 | 3 | 4 | 5;
 export type CountsByRarity = Partial<Record<MaterialRarity, number>>;
-export type MaterialCategory = 'talent-book' | 'weapon-ascension';
-export type CraftStrategyId = 'none' | 'refund_25' | 'double_10';
-export type CharacterElement = 'pyro' | 'hydro' | 'anemo' | 'electro' | 'dendro' | 'cryo' | 'geo';
-export type WeaponType = 'sword' | 'claymore' | 'polearm' | 'bow' | 'catalyst';
+export type MaterialCategory = "talent-book" | "weapon-ascension";
+export type CraftStrategyId = "none" | "refund_25" | "double_10";
+export type CharacterElement =
+  "pyro" | "hydro" | "anemo" | "electro" | "dendro" | "cryo" | "geo";
+export type WeaponType = "sword" | "claymore" | "polearm" | "bow" | "catalyst";
 
 export interface LocalizedText {
-  'zh-CN': string;
-  'en-US': string;
+  "zh-CN": string;
+  "en-US": string;
 }
 
 export interface MaterialTier {
@@ -45,7 +48,7 @@ export interface Weapon {
   type?: WeaponType;
   materialFamilyId?: string;
   phaseRequirements: Record<number, CountsByRarity>;
-  calculationStatus?: 'supported' | 'unsupported-source-curve';
+  calculationStatus?: "supported" | "unsupported-source-curve";
 }
 
 export interface Character {
@@ -58,7 +61,7 @@ export interface Character {
 }
 
 export interface WeaponPlanTarget {
-  type: 'weapon';
+  type: "weapon";
   weaponId: string;
   currentPhase: number;
   targetPhase: number;
@@ -71,14 +74,14 @@ export interface TalentLevels {
 }
 
 export interface TalentPlanTarget {
-  type: 'talent';
+  type: "talent";
   characterId: string;
   current: TalentLevels;
   target: TalentLevels;
 }
 
 export interface ManualPlanTarget {
-  type: 'manual';
+  type: "manual";
   materialFamilyId: string;
   required: CountsByRarity;
 }
@@ -101,12 +104,14 @@ export interface UserProfileV1 {
   savedPlans: SavedPlan[];
   recentPlanIds: string[];
   updatedAt: string;
+  /** 用户选择的应用外观；旧版 Profile 缺少该字段时按 system 处理。 */
+  theme?: ThemeMode;
 }
 
 export interface DataManifestV1 {
   schemaVersion: 1;
   gameDataVersion: string;
-  provider: 'lunaris' | 'builtin';
+  provider: "lunaris" | "builtin";
   providerUrl: string;
   fetchedAt: string;
   generatedAt: string;
@@ -123,20 +128,36 @@ export interface GameDataBundle {
 
 export interface GameDataStatus {
   manifest: DataManifestV1;
-  source: 'builtin' | 'active';
-  counts: { characters: number; weapons: number; talentMaterials: number; weaponMaterials: number; icons: number };
+  source: "builtin" | "active";
+  counts: {
+    characters: number;
+    weapons: number;
+    talentMaterials: number;
+    weaponMaterials: number;
+    icons: number;
+  };
   operations: GameDataOperation[];
 }
 
 export interface GameDataOperation {
-  action: 'sync' | 'import' | 'restore';
-  outcome: 'success' | 'failed' | 'cancelled';
+  action: "sync" | "import" | "restore";
+  outcome: "started" | "success" | "failed" | "cancelled";
   version?: string;
   at: string;
 }
 
 export interface DataSyncProgress {
-  stage: 'idle' | 'checking' | 'catalogs' | 'details' | 'materials' | 'icons' | 'validating' | 'installing' | 'complete' | 'error' | 'cancelled';
+  stage:
+    | "idle"
+    | "checking"
+    | "catalogs"
+    | "details"
+    | "icons"
+    | "validating"
+    | "installing"
+    | "complete"
+    | "error"
+    | "cancelled";
   completed: number;
   total: number;
   message: string;
@@ -151,12 +172,18 @@ export interface DesktopApi {
   getGameDataStatus(): Promise<GameDataStatus>;
   syncGameData(): Promise<GameDataStatus>;
   cancelGameDataSync(): Promise<void>;
-  importGameData(): Promise<GameDataStatus | null>;
-  exportGameData(): Promise<boolean>;
+  importGameData(locale: string): Promise<GameDataStatus | null>;
+  exportGameData(locale: string): Promise<boolean>;
   restoreBuiltinGameData(): Promise<GameDataStatus>;
   openExternal(url: string): Promise<void>;
+  openUserDataDirectory(): Promise<void>;
+  openGameDataDirectory(): Promise<void>;
   iconUrl(iconId: string | undefined): string;
-  onGameDataProgress(listener: (progress: DataSyncProgress) => void): () => void;
+  onGameDataProgress(
+    listener: (progress: DataSyncProgress) => void,
+  ): () => void;
+  onWindowCloseRequested(listener: () => void): () => void;
+  confirmWindowClose(): void;
 }
 
 declare global {

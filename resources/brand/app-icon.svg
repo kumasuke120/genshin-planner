@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Genshin Planner</title>
+  <defs>
+    <linearGradient id="crystal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a9c9e3"/>
+      <stop offset="1" stop-color="#557fa3"/>
+    </linearGradient>
+  </defs>
+  <path fill="#292d34" d="M114 38h240c38 0 68 30 68 68v300c0 38-30 68-68 68H114c-38 0-68-30-68-68V106c0-38 30-68 68-68Z"/>
+  <path fill="#edf0f4" d="M140 105h178c24 0 44 20 44 44v214c0 24-20 44-44 44H140c-24 0-44-20-44-44V149c0-24 20-44 44-44Z"/>
+  <path fill="#b99145" d="M167 84h124a22 22 0 0 1 22 22v22H145v-22a22 22 0 0 1 22-22Z"/>
+  <path fill="#557fa3" d="m139 203 18-18 22 22 43-47 20 18-62 68a14 14 0 0 1-20 0l-21-21a15 15 0 0 1 0-22Z"/>
+  <path fill="#68717d" d="M245 190h72v20h-72zm0 44h54v20h-54z"/>
+  <path fill="#557fa3" d="m139 306 18-18 22 22 43-47 20 18-62 68a14 14 0 0 1-20 0l-21-21a15 15 0 0 1 0-22Z"/>
+  <path fill="#68717d" d="M245 293h72v20h-72zm0 44h42v20h-42z"/>
+  <path fill="url(#crystal)" stroke="#d2ae68" stroke-width="12" stroke-linejoin="round" d="m369 219 75 55-29 89-92 1-29-89Z"/>
+  <path fill="#bfe0e5" d="m369 235 28 62-28 50-28-50Z" opacity=".75"/>
+</svg>

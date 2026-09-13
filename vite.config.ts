@@ -10,8 +10,25 @@ export default defineConfig({
   plugins: [react()],
   define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '1.0.0'), __APP_AUTHOR__: JSON.stringify('Kumasuke120'), __BUILD_ID__: JSON.stringify(buildId()) },
   root: 'src/renderer',
+  publicDir: '../../resources/brand',
   server: { port: 5173, strictPort: true },
   base: './',
-  build: { outDir: '../../dist-renderer', emptyOutDir: true },
-  test: { environment: 'jsdom', globals: true, include: ['../domain/**/*.test.ts', '../main/**/*.test.ts', '**/*.{test,spec}.?(c|m)[jt]s?(x)'] }
+  build: { outDir: '../../out/renderer', emptyOutDir: true },
+  test: {
+    globals: true,
+    coverage: {
+      provider: 'v8',
+      allowExternal: true,
+      reportsDirectory: '../../out/coverage',
+      reporter: ['text', 'html', 'json-summary'],
+      include: ['../domain/**/*.ts', '../main/**/*.ts', './**/*.{ts,tsx}'],
+      exclude: ['**/*.test.*', '**/*.d.ts', '../main/index.ts', '../main/data-cli.ts', 'main.tsx'],
+      thresholds: { statements: 90, branches: 90, functions: 90, lines: 90 }
+    },
+    projects: [
+      { test: { name: 'unit', environment: 'node', include: ['../domain/**/*.test.ts', '../data/**/*.test.ts'] } },
+      { test: { name: 'component', environment: 'jsdom', include: ['**/*.test.tsx'], setupFiles: ['./test/setup.ts'] } },
+      { test: { name: 'integration', environment: 'node', include: ['../main/**/*.test.ts'] } }
+    ]
+  }
 });
