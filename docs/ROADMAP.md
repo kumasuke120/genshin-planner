@@ -33,7 +33,7 @@ v1.x.x 只面向 Windows，以绿色 ZIP 交付。macOS、Linux、OCR、跨设�
 
 ## 统一版本路线
 
-项目版本号统一采用 `vMAJOR.MINOR.PATCH` 三段式格式。当前正式版本为 `v1.1.0`，下一目标版本为 `v1.1.1`。路线中的 `v1.2.x` 表示 `v1.2.0` 及其后续补丁版本；设计文档、Git Tag 和发布制品必须使用完整的三个数字。
+项目版本号统一采用 `vMAJOR.MINOR.PATCH` 三段式格式。当前正式版本为 `v1.1.1`，下一目标版本为 `v1.2.0`。路线中的 `v1.2.x` 表示 `v1.2.0` 及其后续补丁版本；设计文档、Git Tag 和发布制品必须使用完整的三个数字。
 
 本文中的 `v1.3.x` 等均指本项目版本；原神游戏版本沿用官方格式并明确标注为“游戏版本”，两者不共用版本号规则。
 
@@ -1023,10 +1023,10 @@ out/             可丢弃的构建工作目录（Git 忽略）
   electron/      主进程与 preload 输出
   game-data/     内置资料临时输出
   package/       electron-builder 中间输出
-release/         最终绿色 ZIP（Git 忽略）
+  release/       最终绿色 ZIP
 ```
 
-- `release/` 只保留 `GenshinMaterialPlanner-<version>-win.zip`；`win-unpacked` 和 builder 调试文件留在 `out/package/`。
+- `out/release/` 只保留 `GenshinPlanner-v<version>-win-<arch>.zip`；`win-unpacked` 和 builder 调试文件留在 `out/package/`。
 - 新流程验证通过后再清理旧构建目录，不触碰源码、资源、文档或用户数据。
 - 常规开发不生成制品；只有用户明确要求时运行 `npm run package`。
 

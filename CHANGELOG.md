@@ -4,6 +4,18 @@
 
 ## [未发布]
 
+## [1.1.1] - 2026-09-13
+
+### 变更
+
+- 为导出的公开 API、接口成员和 preload 桌面能力补齐简体中文文档，并通过 lint 强制检查文档完整性与注释格式。
+- 为 Electron 主入口、资料迁移、原子替换、合成取整和窗口关闭握手补充维护说明。
+- 视觉回归截图改为仅保存在本地，不再纳入 Git 版本控制。
+
+### 修复
+
+- 修复游戏资料目录权限等文件系统错误被错误识别为首次安装或旧目录缺失的问题。
+
 ## [1.1.0] - 2026-09-13
 
 ### 新增
@@ -47,6 +59,7 @@
 - 支持本地方案保存、方案导入导出及从 Lunaris 同步游戏资料。
 - 提供简体中文和英文界面。
 
-[未发布]: https://github.com/kumasuke120/genshin-planner/compare/v1.1.0...HEAD
+[未发布]: https://github.com/kumasuke120/genshin-planner/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/kumasuke120/genshin-planner/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/kumasuke120/genshin-planner/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/kumasuke120/genshin-planner/releases/tag/v1.0.0
