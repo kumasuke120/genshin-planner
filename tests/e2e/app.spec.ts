@@ -2,9 +2,25 @@ import { _electron as electron, expect, test } from '@playwright/test';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import type { UserProfileV1 } from '../../src/shared/types';
+
+async function writeTestProfile(userData: string, overrides: Partial<UserProfileV1> = {}): Promise<void> {
+  const now = new Date().toISOString();
+  await writeFile(path.join(userData, 'profile.json'), JSON.stringify({
+    schemaVersion: 1,
+    locale: 'zh-CN',
+    inventoryByMaterialFamily: {},
+    savedPlans: [],
+    recentPlanIds: [],
+    updatedAt: now,
+    theme: 'system',
+    ...overrides
+  } satisfies UserProfileV1), 'utf8');
+}
 
 test('应用可以在隔离数据目录中启动并切换主要页面', async () => {
   const userData = await mkdtemp(path.join(tmpdir(), 'genshin-planner-e2e-'));
+  await writeTestProfile(userData);
   const application = await electron.launch({
     args: ['.'],
     env: { ...process.env, GENSHIN_PLANNER_E2E: '1', GENSHIN_PLANNER_USER_DATA: userData }
@@ -24,10 +40,7 @@ test('应用可以在隔离数据目录中启动并切换主要页面', async ()
 test('缺少游戏资料的方案先解释原因再由用户决定是否更新', async () => {
   const userData = await mkdtemp(path.join(tmpdir(), 'genshin-planner-missing-data-e2e-'));
   const now = new Date().toISOString();
-  await writeFile(path.join(userData, 'profile.json'), JSON.stringify({
-    schemaVersion: 1,
-    locale: 'zh-CN',
-    inventoryByMaterialFamily: {},
+  await writeTestProfile(userData, {
     savedPlans: [{
       id: 'future-character-plan',
       name: '未来角色计划',
@@ -38,7 +51,7 @@ test('缺少游戏资料的方案先解释原因再由用户决定是否更新',
     }],
     recentPlanIds: ['future-character-plan'],
     updatedAt: now
-  }), 'utf8');
+  });
   const application = await electron.launch({
     args: ['.'],
     env: { ...process.env, GENSHIN_PLANNER_E2E: '1', GENSHIN_PLANNER_USER_DATA: userData }
@@ -62,6 +75,7 @@ test('缺少游戏资料的方案先解释原因再由用户决定是否更新',
 
 test('@visual 主要工作区在桌面视口保持稳定', async () => {
   const userData = await mkdtemp(path.join(tmpdir(), 'genshin-planner-visual-'));
+  await writeTestProfile(userData);
   const application = await electron.launch({
     args: ['.'],
     env: { ...process.env, GENSHIN_PLANNER_E2E: '1', GENSHIN_PLANNER_VISUAL: '1', GENSHIN_PLANNER_USER_DATA: userData }

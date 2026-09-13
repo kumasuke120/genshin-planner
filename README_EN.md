@@ -15,11 +15,11 @@
   <img src="resources/brand/app-icon.svg" width="112" height="112" alt="Genshin Planner logo">
 </p>
 
-![Genshin Planner overview](docs/assets/screenshots/overview.png)
+![Genshin Planner overview](docs/assets/screenshots/overview-en.png)
 
 ## Usage
 
-1. Open **Settings > Game Data** and select **Sync Lunaris** to download the complete game data. The built-in sample data can also be used to try the basic workflow.
+1. Open **Settings > Game Data** and select **Sync [Lunaris](https://lunaris.moe/)** to download the complete game data. The built-in sample data can also be used to try the basic workflow.
 2. Open **Character Talents** or **Weapon Ascension** from the sidebar, then select the target and desired level.
 3. Enter the materials currently in your inventory, optionally select a crafting character, and review the available amounts after crafting and any remaining deficits.
 4. Select **Save Plan** to keep a progression target. Saved plans can be reopened from the overview or **Settings > My Plans**.
