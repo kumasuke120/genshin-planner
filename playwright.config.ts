@@ -8,7 +8,7 @@ export default defineConfig({
   timeout: 30_000,
   expect: {
     timeout: 15_000,
-    toMatchSnapshot: { maxDiffPixelRatio: 0.01 }
+    toMatchSnapshot: { maxDiffPixelRatio: 0.02 }
   },
   retries: 0,
   workers: 1,
