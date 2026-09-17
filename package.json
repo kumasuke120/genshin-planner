@@ -1,6 +1,6 @@
 {
   "name": "genshin-material-planner",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Local Genshin Impact progression planner",
   "main": "out/electron/main/index.js",
   "private": true,
@@ -11,7 +11,7 @@
     "url": "https://github.com/kumasuke120/genshin-planner.git"
   },
   "scripts": {
-    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "dev": "concurrently -k \"vite\" \"tsc -p tsconfig.electron.json --watch\" \"wait-on tcp:5173 file:out/electron/main/index.js && electron .\"",
     "build": "tsc -p tsconfig.electron.json && vite build",
     "build:main": "tsc -p tsconfig.electron.json",
     "data:import": "npm run build:main && node out/electron/main/data-cli.js",

@@ -4,6 +4,13 @@
 
 ## [未发布]
 
+## [1.1.2] - 2026-09-17
+
+### 修复
+
+- 修复关闭悬浮中的方案标签后，完整名称 Tooltip 仍残留在界面上的问题。
+- 修复删除 `out/` 后启动开发模式时，Electron 主进程产物尚未生成导致应用无法启动的问题。
+
 ## [1.1.1] - 2026-09-13
 
 ### 变更
@@ -59,7 +66,8 @@
 - 支持本地方案保存、方案导入导出及从 Lunaris 同步游戏资料。
 - 提供简体中文和英文界面。
 
-[未发布]: https://github.com/kumasuke120/genshin-planner/compare/v1.1.1...HEAD
+[未发布]: https://github.com/kumasuke120/genshin-planner/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/kumasuke120/genshin-planner/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/kumasuke120/genshin-planner/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/kumasuke120/genshin-planner/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/kumasuke120/genshin-planner/releases/tag/v1.0.0

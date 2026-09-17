@@ -748,8 +748,11 @@ describe("planner interface", () => {
     await user.click(await screen.findByRole("button", { name: /待关闭方案/ }));
     await user.click(screen.getByLabelText("当前阶段"));
     await user.click(screen.getByRole("option", { name: "Lv. 40+" }));
+    fireEvent.mouseEnter(screen.getByRole("button", { name: /待关闭方案/ }));
+    expect(screen.getByRole("tooltip")).toHaveTextContent("待关闭方案");
     const close = screen.getByRole("img", { name: "关闭" });
     await user.click(close);
+    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
     expect(document.querySelector(".workspace-tab.active")).toHaveTextContent(
       "待关闭方案",
     );

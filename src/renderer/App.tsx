@@ -600,6 +600,7 @@ export default function App() {
       craftingCharacterId !== editingPlan.craftingCharacterId),
   );
   const closePlanTab = (planId: string) => {
+    setWorkspaceTooltip(null);
     if (
       planId === editingPlanId &&
       isCurrentPlanDirty &&
